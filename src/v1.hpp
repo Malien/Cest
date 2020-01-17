@@ -62,11 +62,11 @@ namespace cest {
         } catch (std::exception e) {
             std::cerr << foreground::brightRed << 'x' << colorEnd << ' ' << name << ' '
                       << foreground::brightBlack << filename << ':' << line << colorEnd << std::endl;
-            std::cerr << "\tTest threw STL expetion: " << foreground::brightRed << e.what() << colorEnd << std::endl;
+            std::cerr << "\tTest threw STL exception: " << foreground::brightRed << e.what() << colorEnd << std::endl;
         } catch (...) {
             std::cerr << foreground::brightRed << 'x' << colorEnd << ' ' << name << ' '
                       << foreground::brightBlack << filename << ':' << line << colorEnd << std::endl;
-            std::cerr << foreground::brightRed << "\tTest threw unknown exeption" << colorEnd << std::endl;
+            std::cerr << foreground::brightRed << "\tTest threw unknown exception" << colorEnd << std::endl;
         }
     }
 
