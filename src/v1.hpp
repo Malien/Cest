@@ -31,6 +31,14 @@ namespace cest {
                 throw TestFailure{file, line, expected.str(), result.str()};
             }
         }
+
+        void toPass(const std::function<bool(const T&)>& func) const {
+            if (!func(val)) {
+                std::stringstream result;
+                result << val;
+                throw TestFailure{file, line, std::nullopt, result.str()};
+            }
+        }
     };
 
     template <typename T> const TestCase<T> expectImpl(const T& val, const char* filename, int line) {
@@ -46,7 +54,7 @@ namespace cest {
         } catch (const TestFailure& failure) {
             std::cerr << foreground::brightRed << 'x' << colorEnd << ' ' << name << ' '
                       << foreground::brightBlack << filename << ':' << line << colorEnd << std::endl;
-            std::cerr << "Test failed on line " << failure.line << " of file " << failure.file << std::endl;
+            std::cerr << "Test failed at " << foreground::brightBlack << failure.file << ':' << failure.line << colorEnd << std::endl;
             if (failure.expected_repr.has_value()) {
                 std::cerr << foreground::cyan << "\tExpected: \n\t\t" << failure.expected_repr.value() << colorEnd << std::endl;
             }

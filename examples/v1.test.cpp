@@ -1,5 +1,9 @@
 #include "../src/v1.hpp"
 
+bool isEven(const int& a) {
+    return a % 2 == 0;
+}
+
 int main() {
     test("should pass", []{
         expect(3).toBe(3);
@@ -12,5 +16,11 @@ int main() {
     });
     test("should throw non error", []{
         throw "h";
+    });
+    test("should pass own condition", []{
+        expect(2).toPass(isEven);
+    });
+    test("should fail own condition", []{
+        expect(3).toPass(isEven);
     });
 }
