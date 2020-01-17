@@ -3,7 +3,7 @@
 
 namespace colorize {
     struct ColorEndType {};
-    const ColorEndType colorEnd;
+    const ColorEndType end;
 
     namespace standart {
         enum class foreground: unsigned char {
