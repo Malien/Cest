@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <chrono>
+#include <iomanip>
 #include "colorize.hpp"
 #include "time_util.hpp"
 
@@ -22,7 +23,7 @@ std::ostream& operator<<(std::ostream& os, const cest::message::pass& msg) {
     using namespace colorize::standart;
     return os << foreground::brightGreen << "✓" << colorize::end << ' ' << msg.name << ' ' 
               << foreground::brightBlack << msg.filename << ':' << msg.line << colorize::end 
-              << foreground::yellow << " (" << time_util::timeDiff(msg.start) << ')' << colorize::end;
+              << foreground::yellow << std::setprecision(2) << " (" << time_util::timeDiff(msg.start) << ')' << colorize::end;
 }
 
 std::ostream& operator<<(std::ostream& os, const cest::message::fail& msg) {

@@ -1,3 +1,5 @@
+#include <thread>
+
 #include "../src/cest.hpp"
 
 bool isEven(const int& a) {
@@ -22,5 +24,9 @@ int main() {
     });
     test("should fail own condition", []{
         expect(3).toPass(isEven);
+    });
+    test("should take about 1s", []{
+        using namespace std::literals::chrono_literals;
+        std::this_thread::sleep_for(1s);
     });
 }
