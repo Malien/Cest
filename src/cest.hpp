@@ -42,6 +42,20 @@ namespace cest {
         }
     };
 
+    struct TestMessage {
+        const std::string_view& name;
+        const char* filename;
+        int line;
+        std::chrono::time_point<std::chrono::steady_clock> start;
+    };
+
+    struct PassMessage: public TestMessage {};
+    struct FailMessage: public TestMessage {};
+
+    void f(std::ostream& os) {
+        os << colorize::standart::foreground::cyan;
+    }
+
     template <typename T> const TestCase<T> expectImpl(const T& val, const char* filename, int line) {
         return {val, filename, line};
     }
@@ -52,29 +66,35 @@ namespace cest {
         auto start = high_resolution_clock::now();
         try {
             test_func();
-            std::cout << foreground::brightGreen << "✓" << colorize::end << ' ' << name << ' ' 
-                      << foreground::brightBlack << filename << ':' << line << colorize::end 
-                      << foreground::yellow << " (" << time_util::timeDiff(start) << ')' << colorize::end << std::endl;
+            std::cout << PassMessage {name, filename, line, start} << std::endl;
         } catch (const TestFailure& failure) {
-            std::cerr << foreground::brightRed << 'x' << colorize::end << ' ' << name << ' '
-                      << foreground::brightBlack << filename << ':' << line << colorize::end
-                      << foreground::yellow << " (" << time_util::timeDiff(start) << ')' << colorize::end << std::endl;
-            std::cerr << "Test failed at " << foreground::brightBlack << failure.file << ':' << failure.line << colorize::end << std::endl;
+            std::cerr << FailMessage {name, filename, line, start} << std::endl
+                      << "Test failed at " << foreground::brightBlack << failure.file << ':' << failure.line << colorize::end << std::endl;
             if (failure.expected_repr.has_value()) {
                 std::cerr << foreground::cyan << "\tExpected: \n\t\t" << failure.expected_repr.value() << colorize::end << std::endl;
             }
             std::cerr << foreground::red << "\tGot: \n\t\t" << failure.result_repr << colorize::end << std::endl;
         } catch (std::exception e) {
-            std::cerr << foreground::brightRed << 'x' << colorize::end << ' ' << name << ' '
-                      << foreground::brightBlack << filename << ':' << line << colorize::end
-                      << foreground::yellow << " (" << time_util::timeDiff(start) << ')' << colorize::end << std::endl;
-            std::cerr << "\tTest threw STL exception: " << foreground::brightRed << e.what() << colorize::end << std::endl;
+            std::cerr << FailMessage {name, filename, line, start} << std::endl
+                      << "\tTest threw STL exception: " << foreground::brightRed << e.what() << colorize::end << std::endl;
         } catch (...) {
-            std::cerr << foreground::brightRed << 'x' << colorize::end << ' ' << name << ' '
-                      << foreground::brightBlack << filename << ':' << line << colorize::end
-                      << foreground::yellow << " (" << time_util::timeDiff(start) << ')' << colorize::end << std::endl;
-            std::cerr << foreground::brightRed << "\tTest threw unknown exception" << colorize::end << std::endl;
+            std::cerr << FailMessage {name, filename, line, start} << std::endl
+                      << foreground::brightRed << "\tTest threw unknown exception" << colorize::end << std::endl;
         }
     }
 
+}
+
+std::ostream& operator<< (std::ostream& os, const cest::PassMessage& msg) {
+    using namespace colorize::standart;
+    return os << foreground::brightGreen << "✓" << colorize::end << ' ' << msg.name << ' ' 
+                << foreground::brightBlack << msg.filename << ':' << msg.line << colorize::end 
+                << foreground::yellow << " (" << time_util::timeDiff(msg.start) << ')' << colorize::end;
+}
+
+std::ostream& operator<<(std::ostream& os, const cest::FailMessage& msg) {
+    using namespace colorize::standart;
+    return os << foreground::brightRed << 'x' << colorize::end << ' ' << msg.name << ' '
+                << foreground::brightBlack << msg.filename << ':' << msg.line << colorize::end
+                << foreground::yellow << " (" << time_util::timeDiff(msg.start) << ')' << colorize::end; 
 }
