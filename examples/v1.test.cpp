@@ -25,8 +25,17 @@ int main() {
     test("should fail own condition", []{
         expect(3).toPass(isEven);
     });
+    testp("should fail after 1s", []{
+        using namespace std::literals::chrono_literals;
+        std::this_thread::sleep_for(1s);
+        expect(5).toBe(6);
+    });
     test("should take about 1s", []{
         using namespace std::literals::chrono_literals;
         std::this_thread::sleep_for(1s);
     });
+    testp("should be executed in parallel", []{
+        expect(5).toBe(5);
+    });
+    cest::joinParallelTests();
 }

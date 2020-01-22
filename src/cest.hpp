@@ -4,13 +4,23 @@
 #include <optional>
 #include <iostream>
 #include <sstream>
+#include <thread>
+#include <vector>
 #include "colorize.hpp"
 #include "message.hpp"
 
-#define test(name, test_func) cest::testImpl(name, test_func, __FILE__, __LINE__)
+#define test(name, test_func) cest::sequentialTest(name, test_func, __FILE__, __LINE__)
+#define testp(name, test_func) cest::parallelTest(name, test_func, __FILE__, __LINE__)
 #define expect(value) cest::expectImpl(value, __FILE__, __LINE__)
 
 namespace cest {
+
+    namespace _global {
+        std::mutex taskPoolMutex;
+        std::vector<std::thread> taskPool;
+    }
+
+    enum class mode { sequential, parallel };
 
     struct TestFailure {
         std::string file;
@@ -46,14 +56,17 @@ namespace cest {
         os << colorize::standart::foreground::cyan;
     }
 
-    template <typename T> const TestCase<T> expectImpl(const T& val, const char* filename, int line) {
-        return {val, filename, line};
-    }
+    template <typename T> const TestCase<T> expectImpl(const T& val,
+                                                       const char* filename = "Unknown",
+                                                       int line = 0) { return { val, filename, line }; }
 
-    void testImpl(const std::string_view& name, std::function<void()> test_func, const char* filename, int line) {
+    void sequentialTest(const std::string_view& name, 
+                        std::function<void()> test_func,
+                        const char* filename = "Unknown",
+                        int line = 0)
+    {
         using namespace colorize::standart;
-        using namespace std::chrono;
-        auto start = high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
         try {
             test_func();
             std::cout << message::pass {name, filename, line, start} << std::endl;
@@ -70,6 +83,24 @@ namespace cest {
         } catch (...) {
             std::cerr << message::fail {name, filename, line, start} << std::endl
                       << foreground::brightRed << "\tTest threw unknown exception" << colorize::end << std::endl;
+        }
+    }
+
+    void parallelTest(const std::string_view& name,
+                      std::function<void()> test_func,
+                      const char* filename = "Unknown",
+                      int line = 0)
+    {
+        std::unique_lock lock{_global::taskPoolMutex};
+        _global::taskPool.push_back(std::thread([&]{
+            sequentialTest(name, test_func, filename, line);
+        }));
+    }
+
+    void joinParallelTests() {
+        std::unique_lock lock{_global::taskPoolMutex};
+        for (auto& task : _global::taskPool) {
+            task.join();
         }
     }
 
