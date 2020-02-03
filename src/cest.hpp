@@ -27,38 +27,34 @@ namespace cest {
         int line;
         std::optional<std::string> expected_repr;
         std::string result_repr;
+        bool negated = false;
     };
 
     template <typename T> struct TestCase {
         const T& val;
         std::string file;
         int line;
+        bool negated = false;
 
         void toBe(const T& val) const {
-            if (this->val != val) {
+            if ((this->val == val) ^ !negated) {
                 std::stringstream expected, result;
                 expected << val;
                 result << this->val;
-                throw TestFailure{file, line, expected.str(), result.str()};
-            }
-        }
-
-        void notToBe(const T& val) const {
-            if (this->val == val) {
-                std::stringstream expected, result;
-                expected << "Not to match: "
-                expected << val;
-                result << this->val;
-                throw TestFailure{file, line, expected.str(), result.str()};
+                throw TestFailure{file, line, expected.str(), result.str(), negated};
             }
         }
 
         void toPass(const std::function<bool(const T&)>& func) const {
-            if (!func(val)) {
+            if (func(val) ^ !negated) {
                 std::stringstream result;
                 result << val;
-                throw TestFailure{file, line, std::nullopt, result.str()};
+                throw TestFailure{file, line, std::nullopt, result.str(), negated};
             }
+        }
+
+        const TestCase<T> operator!() const {
+            return { val, file, line, !negated };
         }
     };
 
@@ -81,10 +77,11 @@ namespace cest {
             test_func();
             std::cout << message::pass {name, filename, line, start} << std::endl;
         } catch (const TestFailure& failure) {
+            std::string expectedMsg = (failure.negated) ? "Expected NOT: " : "Expected";
             std::cerr << message::fail {name, filename, line, start} << std::endl
                       << "Test failed at " << foreground::brightBlack << failure.file << ':' << failure.line << colorize::end << std::endl;
             if (failure.expected_repr.has_value()) {
-                std::cerr << foreground::cyan << "\tExpected: \n\t\t" << failure.expected_repr.value() << colorize::end << std::endl;
+                std::cerr << foreground::cyan << "\t" << expectedMsg << "\n\t\t" << failure.expected_repr.value() << colorize::end << std::endl;
             }
             std::cerr << foreground::red << "\tGot: \n\t\t" << failure.result_repr << colorize::end << std::endl;
         } catch (std::exception e) {
