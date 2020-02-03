@@ -43,6 +43,16 @@ namespace cest {
             }
         }
 
+        void notToBe(const T& val) const {
+            if (this->val == val) {
+                std::stringstream expected, result;
+                expected << "Not to match: "
+                expected << val;
+                result << this->val;
+                throw TestFailure{file, line, expected.str(), result.str()};
+            }
+        }
+
         void toPass(const std::function<bool(const T&)>& func) const {
             if (!func(val)) {
                 std::stringstream result;
