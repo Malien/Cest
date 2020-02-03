@@ -44,4 +44,11 @@ int main() {
     test("should fail not to be the same", []{
         (not expect(5)).toBe(5);
     });
+    test("shoud be close to", []{
+        expect(4.9999999).toBeCloseTo(5);
+    });
+    test("struct", []{
+        struct {} a;
+        expect(a);
+    });
 }

@@ -6,6 +6,7 @@
 #include <sstream>
 #include <thread>
 #include <vector>
+#include <cmath>
 #include "colorize.hpp"
 #include "message.hpp"
 
@@ -38,6 +39,15 @@ namespace cest {
 
         void toBe(const T& val) const {
             if ((this->val == val) ^ !negated) {
+                std::stringstream expected, result;
+                expected << val;
+                result << this->val;
+                throw TestFailure{file, line, expected.str(), result.str(), negated};
+            }
+        }
+
+        void toBeCloseTo(T val, T eps = 1e-4) const {
+            if ((fabs(this->val - val) < eps) ^ !negated) {
                 std::stringstream expected, result;
                 expected << val;
                 result << this->val;
