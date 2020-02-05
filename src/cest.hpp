@@ -10,16 +10,26 @@
 #include "colorize.hpp"
 #include "message.hpp"
 
+#ifdef __COUNTER__
+#define UNIQUE __COUNTER__
+#else
+#define UNIQUE __LINE__
+#endif
+
+#define PP_CAT(a, b) PP_CAT_I(a, b)
+#define PP_CAT_I(a, b) PP_CAT_II(~, a ## b)
+#define PP_CAT_II(p, res) res
+
+#define UNIQUE_NAME(base) PP_CAT(base, UNIQUE)
+
 #define test(name, test_func) cest::sequentialTest(name, test_func, __FILE__, __LINE__)
-#define testp(name, test_func) cest::parallelTest(name, test_func, __FILE__, __LINE__)
+#define testp(name, test_func) cest::ParallelTestHandler UNIQUE_NAME(__parallel_test_) = cest::parallelTest(name, test_func, __FILE__, __LINE__)
 #define expect(value) cest::expectImpl(value, __FILE__, __LINE__)
 
 namespace cest {
 
     namespace _global {
-        std::mutex taskPoolMutex;
         std::mutex consoleMutex;
-        std::vector<std::thread> taskPool;
     }
 
     enum class mode { sequential, parallel };
@@ -108,22 +118,21 @@ namespace cest {
         }
     }
 
-    void parallelTest(const std::string_view& name,
-                      std::function<void()> test_func,
-                      const char* filename = "Unknown",
-                      int line = 0)
-    {
-        std::unique_lock lock{_global::taskPoolMutex};
-        _global::taskPool.push_back(std::thread([&]{
-            sequentialTest(name, test_func, filename, line);
-        }));
-    }
-
-    void joinParallelTests() {
-        std::unique_lock lock{_global::taskPoolMutex};
-        for (auto& task : _global::taskPool) {
-            task.join();
+    struct ParallelTestHandler {
+        std::thread thread;
+        ~ParallelTestHandler() {
+            thread.join();
         }
+    };
+
+    ParallelTestHandler parallelTest(const std::string_view& name,
+                                     std::function<void()> test_func,
+                                     const char* filename = "Unknown",
+                                     int line = 0)
+    {
+        return {std::thread([&]{
+            sequentialTest(name, test_func, filename, line);
+        })};
     }
 
 }

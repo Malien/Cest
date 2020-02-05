@@ -50,5 +50,4 @@ int main() {
         struct {} a;
         expect(a);
     });
-    cest::joinParallelTests();
 }
