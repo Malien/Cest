@@ -37,7 +37,6 @@ int main() {
     testp("should be executed in parallel", []{
         expect(5).toBe(5);
     });
-    cest::joinParallelTests();
     test("should pass not to be the same", []{
         (not expect(5)).toBe(4);
     });
@@ -51,4 +50,5 @@ int main() {
         struct {} a;
         expect(a);
     });
+    cest::joinParallelTests();
 }

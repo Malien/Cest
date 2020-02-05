@@ -18,6 +18,7 @@ namespace cest {
 
     namespace _global {
         std::mutex taskPoolMutex;
+        std::mutex consoleMutex;
         std::vector<std::thread> taskPool;
     }
 
@@ -85,8 +86,10 @@ namespace cest {
         auto start = std::chrono::high_resolution_clock::now();
         try {
             test_func();
+            std::unique_lock lock(_global::consoleMutex);
             std::cout << message::pass {name, filename, line, start} << std::endl;
         } catch (const TestFailure& failure) {
+            std::unique_lock lock(_global::consoleMutex);
             std::string expectedMsg = (failure.negated) ? "Expected NOT: " : "Expected";
             std::cerr << message::fail {name, filename, line, start} << std::endl
                       << "Test failed at " << foreground::brightBlack << failure.file << ':' << failure.line << colorize::end << std::endl;
@@ -95,9 +98,11 @@ namespace cest {
             }
             std::cerr << foreground::red << "\tGot: \n\t\t" << failure.result_repr << colorize::end << std::endl;
         } catch (std::exception e) {
+            std::unique_lock lock(_global::consoleMutex);
             std::cerr << message::pass {name, filename, line, start} << std::endl
                       << "\tTest threw STL exception: " << foreground::brightRed << e.what() << colorize::end << std::endl;
         } catch (...) {
+            std::unique_lock lock(_global::consoleMutex);
             std::cerr << message::fail {name, filename, line, start} << std::endl
                       << foreground::brightRed << "\tTest threw unknown exception" << colorize::end << std::endl;
         }
