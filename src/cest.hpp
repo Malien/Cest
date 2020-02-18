@@ -58,7 +58,7 @@ namespace cest {
         }
 
         void toBeCloseTo(T val, T eps = 1e-4) const {
-            if ((fabs(this->val - val) < eps) ^ !negated) {
+            if (((this->val == val) || (abs(this->val - val) < eps)) ^ !negated) {
                 std::stringstream expected, result;
                 expected << val;
                 result << this->val;
@@ -68,6 +68,14 @@ namespace cest {
 
         void toPass(const std::function<bool(const T&)>& func) const {
             if (func(val) ^ !negated) {
+                std::stringstream result;
+                result << val;
+                throw TestFailure{file, line, std::nullopt, result.str(), negated};
+            }
+        }
+
+        template<typename U> void toPass(const std::function<bool(const T&, const U&)>& func, const U& param) const {
+            if (func(val, param) ^ !negated) {
                 std::stringstream result;
                 result << val;
                 throw TestFailure{file, line, std::nullopt, result.str(), negated};
