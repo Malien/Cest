@@ -6,6 +6,8 @@ bool isEven(const int& a) {
     return a % 2 == 0;
 }
 
+struct E {};
+
 int main() {
     test("should pass", []{
         expect(3).toBe(3);
@@ -49,5 +51,23 @@ int main() {
     test("struct", []{
         struct {} a;
         expect(a);
+    });
+    test("should intercept exception", []{
+        expect([]{
+            throw E{};
+        }).toThrow<E>();
+    });
+    test("should not intercept exception", []{
+        expect([]{}).toThrow<E>();
+    });
+    test("should intecept different STL exception", []{
+        expect([]{
+            throw std::range_error{"Wrong one"};
+        }).toThrow<E>();
+    });
+    test("should intecept different STL exception", []{
+        expect([]{
+            throw 2;
+        }).toThrow<E>();
     });
 }

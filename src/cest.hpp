@@ -7,6 +7,7 @@
 #include <thread>
 #include <vector>
 #include <cmath>
+#include <typeinfo>
 #include "colorize.hpp"
 #include "message.hpp"
 
@@ -50,41 +51,64 @@ namespace cest {
 
         void toBe(const T& val) const {
             if ((this->val == val) ^ !negated) {
-                std::stringstream expected, result;
-                expected << val;
-                result << this->val;
-                throw TestFailure{file, line, expected.str(), result.str(), negated};
+                failWithExpected(val);
             }
         }
 
+        // TODO: get rid of duck typing and provide template constraints
         void toBeCloseTo(T val, T eps = 1e-4) const {
             if (((this->val == val) || (abs(this->val - val) < eps)) ^ !negated) {
-                std::stringstream expected, result;
-                expected << val;
-                result << this->val;
-                throw TestFailure{file, line, expected.str(), result.str(), negated};
+                failWithExpected(val);
             }
         }
 
         void toPass(const std::function<bool(const T&)>& func) const {
             if (func(val) ^ !negated) {
-                std::stringstream result;
-                result << val;
-                throw TestFailure{file, line, std::nullopt, result.str(), negated};
+                fail(val);
             }
         }
 
         template<typename U> void toPass(const std::function<bool(const T&, const U&)>& func, const U& param) const {
             if (func(val, param) ^ !negated) {
-                std::stringstream result;
-                result << val;
-                throw TestFailure{file, line, std::nullopt, result.str(), negated};
+                fail();
+            }
+        }
+
+        // TODO: get rid of duck typing and provide template constraints
+        template<typename U> void toThrow() const {
+            std::string thrownName = typeid(U).name();
+            try {
+                val();
+                throw Rethrow{};
+            } catch(U e) {
+            } catch(Rethrow e) {
+                throw TestFailure{file, line, "To throw " + thrownName, "Nothing", negated};
+            } catch (std::exception e) {
+                throw TestFailure{file, line, "To throw " + thrownName, e.what(), negated};
+            } catch(...) {
+                throw TestFailure{file, line, "To throw " + thrownName, "Non STL exception", negated};
             }
         }
 
         const TestCase<T> operator!() const {
             return { val, file, line, !negated };
         }
+
+        private: 
+            void fail(T val) const {
+                std::stringstream result;
+                result << val;
+                throw TestFailure{file, line, std::nullopt, result.str(), negated};
+            }
+
+            void failWithExpected(T val) const {
+                std::stringstream expectedStream, resultStream;
+                expectedStream << val;
+                resultStream << this->val;
+                throw TestFailure{file, line, expectedStream.str(), resultStream.str(), negated};
+            }
+
+            struct Rethrow {};
     };
 
     void f(std::ostream& os) {
