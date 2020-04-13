@@ -129,7 +129,7 @@ namespace cest {
             std::cout << message::pass {name, filename, line, start} << std::endl;
         } catch (const TestFailure& failure) {
             std::unique_lock lock(_global::consoleMutex);
-            std::string expectedMsg = (failure.negated) ? "Expected NOT: " : "Expected";
+            std::string expectedMsg = (failure.negated) ? "Expected NOT: " : "Expected: ";
             std::cerr << message::fail {name, filename, line, start} << std::endl
                       << "Test failed at " << foreground::brightBlack << failure.file << ':' << failure.line << colorize::end << std::endl;
             if (failure.expected_repr.has_value()) {
