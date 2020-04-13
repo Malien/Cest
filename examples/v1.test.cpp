@@ -70,4 +70,7 @@ int main() {
             throw 2;
         }).toThrow<E>();
     });
+    test("should pass with custom comparator", []{
+        expect(5).toBe<std::not_equal_to<int>>(6);
+    });
 }
