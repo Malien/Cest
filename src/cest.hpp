@@ -49,8 +49,8 @@ namespace cest {
         int line;
         bool negated = false;
 
-        void toBe(const T& val) const {
-            if ((this->val == val) ^ !negated) {
+        template<class Cmp = std::equal_to<T>> void toBe(const T& val, Cmp comparator = {}) const {
+            if (comparator(this->val, val) ^ !negated) {
                 failWithExpected(val);
             }
         }
