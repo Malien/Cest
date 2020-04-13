@@ -58,7 +58,7 @@ namespace cest {
         template<typename I> 
         typename std::enable_if<std::is_convertible<T, I>::value && std::is_floating_point<I>::value>::type 
         toBeCloseTo(I val, I eps = 1e-4) const {
-            if (((this->val == val) || (abs(this->val - val) < eps)) ^ !negated) {
+            if (((this->val == val) || (abs(this->val - val) < this->val * eps)) ^ !negated) {
                 failWithExpected(val);
             }
         }
@@ -82,8 +82,9 @@ namespace cest {
                 val();
                 throw Rethrow{};
             } catch(U e) {
+                if (negated) throw TestFailure{file, line, "To throw " + thrownName, thrownName, negated};
             } catch(Rethrow e) {
-                throw TestFailure{file, line, "To throw " + thrownName, "Nothing", negated};
+                if (!negated) throw TestFailure{file, line, "To throw " + thrownName, "Nothing", negated};
             } catch (std::exception e) {
                 throw TestFailure{file, line, "To throw " + thrownName, e.what(), negated};
             } catch(...) {
