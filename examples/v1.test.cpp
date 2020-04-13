@@ -46,7 +46,7 @@ int main() {
         (not expect(5)).toBe(5);
     });
     test("shoud be close to", []{
-        expect(4.9999999).toBeCloseTo(5);
+        expect(4.9999999).toBeCloseTo(5.0);
     });
     test("struct", []{
         struct {} a;

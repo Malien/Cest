@@ -30,7 +30,7 @@
 namespace cest {
 
     namespace _global {
-        std::mutex consoleMutex;
+        inline std::mutex consoleMutex;
     }
 
     enum class mode { sequential, parallel };
@@ -162,7 +162,7 @@ namespace cest {
                                      const char* filename = "Unknown",
                                      int line = 0)
     {
-        return {std::thread([&]{
+        return {std::thread([=]{
             sequentialTest(name, test_func, filename, line);
         })};
     }
