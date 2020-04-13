@@ -11,7 +11,7 @@ namespace time_util{
         }
     };
 
-    TimeDiff timeDiff(std::chrono::time_point<std::chrono::steady_clock> start) {
+    inline TimeDiff timeDiff(std::chrono::time_point<std::chrono::steady_clock> start) {
         using namespace std::chrono;
         auto end = high_resolution_clock::now();
         duration<double> diff = end - start;
@@ -20,7 +20,7 @@ namespace time_util{
 
 }
 
-std::ostream& operator<<(std::ostream& os, const time_util::TimeDiff& diff) {
+inline std::ostream& operator<<(std::ostream& os, const time_util::TimeDiff& diff) {
     if (diff.seconds < 1) {
         if (diff.milliseconds() < 1) {
             return os << "<1ms";

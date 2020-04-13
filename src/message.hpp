@@ -19,14 +19,14 @@ namespace cest {
     }
 }
 
-std::ostream& operator<<(std::ostream& os, const cest::message::pass& msg) {
+inline std::ostream& operator<<(std::ostream& os, const cest::message::pass& msg) {
     using namespace colorize::standart;
     return os << foreground::brightGreen << "✓" << colorize::end << ' ' << msg.name << ' ' 
               << foreground::brightBlack << msg.filename << ':' << msg.line << colorize::end 
               << foreground::yellow << std::setprecision(2) << " (" << time_util::timeDiff(msg.start) << ')' << colorize::end;
 }
 
-std::ostream& operator<<(std::ostream& os, const cest::message::fail& msg) {
+inline std::ostream& operator<<(std::ostream& os, const cest::message::fail& msg) {
     using namespace colorize::standart;
     return os << foreground::brightRed << 'x' << colorize::end << ' ' << msg.name << ' '
               << foreground::brightBlack << msg.filename << ':' << msg.line << colorize::end

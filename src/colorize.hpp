@@ -66,20 +66,20 @@ namespace colorize {
     };
 }
 
-std::ostream& operator<<(std::ostream& os, colorize::standart::foreground color) {
+inline std::ostream& operator<<(std::ostream& os, colorize::standart::foreground color) {
     return os << "\033[" << (int) color << 'm';
 }
-std::ostream& operator<<(std::ostream& os, colorize::standart::background color) {
+inline std::ostream& operator<<(std::ostream& os, colorize::standart::background color) {
     return os << "\033[" << (int) color << 'm';
 }
 
-std::ostream& operator<<(std::ostream& os, colorize::extended::foreground color) {
+inline std::ostream& operator<<(std::ostream& os, colorize::extended::foreground color) {
     return os << "\033[38;5;" << (int) color << 'm';
 }
-std::ostream& operator<<(std::ostream& os, colorize::extended::background color) {
+inline std::ostream& operator<<(std::ostream& os, colorize::extended::background color) {
     return os << "\033[48;5;" << (int) color << 'm';
 }
 
-std::ostream& operator<<(std::ostream& os, colorize::ColorEndType color) {
+inline std::ostream& operator<<(std::ostream& os, colorize::ColorEndType color) {
     return os << "\033[0m";
 }

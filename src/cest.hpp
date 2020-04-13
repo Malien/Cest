@@ -112,15 +112,11 @@ namespace cest {
             struct Rethrow {};
     };
 
-    void f(std::ostream& os) {
-        os << colorize::standart::foreground::cyan;
-    }
-
     template <typename T> const TestCase<T> expectImpl(const T& val,
                                                        const char* filename = "Unknown",
                                                        int line = 0) { return { val, filename, line }; }
 
-    void sequentialTest(const std::string_view& name, 
+    inline void sequentialTest(const std::string_view& name, 
                         std::function<void()> test_func,
                         const char* filename = "Unknown",
                         int line = 0)
@@ -158,7 +154,7 @@ namespace cest {
         }
     };
 
-    ParallelTestHandler parallelTest(const std::string_view& name,
+    inline ParallelTestHandler parallelTest(const std::string_view& name,
                                      std::function<void()> test_func,
                                      const char* filename = "Unknown",
                                      int line = 0)
