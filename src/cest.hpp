@@ -55,8 +55,9 @@ namespace cest {
             }
         }
 
-        // TODO: get rid of duck typing and provide template constraints
-        void toBeCloseTo(T val, T eps = 1e-4) const {
+        template<typename I> 
+        typename std::enable_if<std::is_convertible<T, I>::value && std::is_floating_point<I>::value>::type 
+        toBeCloseTo(I val, I eps = 1e-4) const {
             if (((this->val == val) || (abs(this->val - val) < eps)) ^ !negated) {
                 failWithExpected(val);
             }
