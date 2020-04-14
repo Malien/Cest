@@ -147,10 +147,12 @@ namespace cest {
             std::unique_lock lock(internal::consoleMutex);
             std::cerr << message::fail {name, filename, line, start} << std::endl
                       << "\tTest threw STL exception: " << foreground::brightRed << e.what() << colorize::end << std::endl;
+            internal::exitCode = EXIT_FAILURE;
         } catch (...) {
             std::unique_lock lock(internal::consoleMutex);
             std::cerr << message::fail {name, filename, line, start} << std::endl
                       << foreground::brightRed << "\tTest threw unknown exception" << colorize::end << std::endl;
+            internal::exitCode = EXIT_FAILURE;
         }
     }
 
