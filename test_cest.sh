@@ -1,0 +1,1 @@
+clang++ ./examples/v1.test.cpp --std=c++17 -o ./examples/v1.out && ./examples/v1.out

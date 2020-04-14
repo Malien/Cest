@@ -29,9 +29,14 @@
 
 namespace cest {
 
-    namespace _global {
-        inline std::mutex consoleMutex;
-    }
+    class internal {
+        static inline std::mutex consoleMutex;
+        static inline int exitCode = EXIT_SUCCESS;
+        friend void sequentialTest(const std::string_view&, std::function<void()>, const char*, int);
+        friend int exitCode();
+    };
+
+    int exitCode() { return internal::exitCode; }
 
     enum class mode { sequential, parallel };
 
@@ -126,10 +131,10 @@ namespace cest {
         auto start = std::chrono::high_resolution_clock::now();
         try {
             test_func();
-            std::unique_lock lock(_global::consoleMutex);
+            std::unique_lock lock(internal::consoleMutex);
             std::cout << message::pass {name, filename, line, start} << std::endl;
         } catch (const TestFailure& failure) {
-            std::unique_lock lock(_global::consoleMutex);
+            std::unique_lock lock(internal::consoleMutex);
             std::string expectedMsg = (failure.negated) ? "Expected NOT: " : "Expected: ";
             std::cerr << message::fail {name, filename, line, start} << std::endl
                       << "Test failed at " << foreground::brightBlack << failure.file << ':' << failure.line << colorize::end << std::endl;
@@ -137,12 +142,13 @@ namespace cest {
                 std::cerr << foreground::cyan << "\t" << expectedMsg << "\n\t\t" << failure.expected_repr.value() << colorize::end << std::endl;
             }
             std::cerr << foreground::red << "\tGot: \n\t\t" << failure.result_repr << colorize::end << std::endl;
+            internal::exitCode = EXIT_FAILURE;
         } catch (std::exception e) {
-            std::unique_lock lock(_global::consoleMutex);
-            std::cerr << message::pass {name, filename, line, start} << std::endl
+            std::unique_lock lock(internal::consoleMutex);
+            std::cerr << message::fail {name, filename, line, start} << std::endl
                       << "\tTest threw STL exception: " << foreground::brightRed << e.what() << colorize::end << std::endl;
         } catch (...) {
-            std::unique_lock lock(_global::consoleMutex);
+            std::unique_lock lock(internal::consoleMutex);
             std::cerr << message::fail {name, filename, line, start} << std::endl
                       << foreground::brightRed << "\tTest threw unknown exception" << colorize::end << std::endl;
         }
